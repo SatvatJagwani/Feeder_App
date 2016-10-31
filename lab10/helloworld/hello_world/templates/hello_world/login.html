@@ -1,2 +1,41 @@
-<h1>Enter login id.</h1>
-<h3>Enter password.</h3>
+<form action=/admin/ onsubmit="return validateform()" method="post">
+  {% csrf_token %}
+  	<p>{{ error }}</p>
+    {{ form }}
+    <br>
+  <input type="submit" value="Submit">
+</form>
+<script>
+function validateform(){
+var txt=document.getElementById("txt").value;
+var len=txt.length;
+if(len<6||len>50){
+window.alert(“Please enter text with no of characters between 6 and 50.”);
+return false;
+}
+var i,ch;
+for(i=0;i<len;i++)
+{
+	ch=txt.charAt(i);
+	if(ch=='<')
+		txt=txt.slice(0,i)+'&lt;'+txt.slice(i+1);
+	if(ch=='>')
+		txt=txt.slice(0,i)+'&gt;'+txt.slice(i+1);
+}
+document.getElementById("txt").value=txt;
+var pass=document.getElementById("key").value;
+len=pass.length;
+if(len<8||len>20){
+window.alert(“Password length must be between 8 and 20.”);
+return false;
+}
+if(pass.indexOf("$")==-1)
+	if(pass.indexOf("!")==-1)
+		if(pass.indexOf("@")==-1)
+			if(pass.indexOf("_")==-1){
+				window.alert(“Please include a special character in password like $,!,@ or _”);
+				return false;
+}
+return true;
+}
+</script>
