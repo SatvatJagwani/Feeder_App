@@ -33,6 +33,7 @@ div.panel.show {
 </head>
 <body>
 <h2></h2>
+<a href="/admin/logout/">Log out</a>
 <hr>
 <button class="accordion">Current Courses</button>
 <div class="panel">
@@ -48,9 +49,12 @@ div.panel.show {
 </div>
 <button class="accordion">Add Courses</button>
 <div class="panel">
-	<p>Type: fire</p>
-	<p>Final state: Bashamo</p>
-	<p>Attacks: ember, fire punch, flare blitz, growl</p>
+<form action=/admin/home.html onsubmit="return validateform()" method="post">
+  {% csrf_token %}
+    {{ form }}
+    <br>
+  <input type="submit" value="Submit">
+</form>
 </div>
 <button class="accordion">Registered Students</button>
 <div class="panel">
