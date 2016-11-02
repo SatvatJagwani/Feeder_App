@@ -7,4 +7,5 @@ urlpatterns = [
 	url(r'^logout',views.logout_page,name='logout'),
 	url(r'^courses/(?P<code>[A-Za-z0-9]+)', views.course, name='course'),
 	url(r'^courseadded',views.courseadded,name='courseadded'),
+	url(r'^studentenrolled',views.studentenrolled,name='studentenrolled'),
 ]

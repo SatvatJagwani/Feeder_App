@@ -51,7 +51,7 @@ div.panel.show {
 <div class="panel">
 <form action=/admin/home.html onsubmit="return validateform()" method="post">
   {% csrf_token %}
-    {{ form }}
+    {{ add_course_form }}
     <br>
   <input type="submit" value="Submit">
 </form>
@@ -70,11 +70,10 @@ div.panel.show {
 </div>
 <button class="accordion">Enroll Students</button>
 <div class="panel">
-<form name="FORM" action=/admin/home.html onsubmit="return validateform()" method="post">
-  <br>
-  <input id="txt" type="text" name="text"><br>
-  <br>
-  <input id="txt" type="text" name="text"><br><br>
+<form action=/admin/home.html onsubmit="return validateform()" method="post">
+  {% csrf_token %}
+    {{ enroll_student_form }}
+    <br>
   <input type="submit" value="Submit">
 </form>
 </div>

@@ -3,8 +3,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
 from django.contrib.auth import authenticate, login, logout
-
-from .forms import AdminLogin, AddCourses
+import csv
+from .forms import AdminLogin, AddCourses, EnrollStudents
 from .models import Course, Student
 
 def home(request):
@@ -13,10 +13,25 @@ def home(request):
 # if this is a POST request we need to process the form data
 	if request.method == 'POST':
         # create a form instance and populate it with data from the request:
-		form = AddCourses(request.POST)
-		
+		acform = AddCourses(request.POST)
+		esform = EnrollStudents(request.POST)
         # check whether it's valid:
-		if form.is_valid():
+		if acform.is_valid():
+		    course=Course.objects.get_or_create(course_code=acform.cleaned_data['course_code'])
+		    course.name=acform.cleaned_data['course_name']
+		    course.feedbackform_set.create(name='midsem')
+		    course.feedbackform_set.create(name='endsem')
+		    for feedback_form in course.feedbackform_set.all():
+		        feedback_form.question_set.create(question_text='Rating of the course as a whole:')
+		        feedback_form.question_set.create(question_text='Rating of overall teaching of the instructor:')
+		        feedback_form.question_set.create(question_text='Rating of the course content:')
+		        feedback_form.question_set.create(question_text='Rating of problem discussion in the tutorial:')
+		        for question in feedback_form.question_set.all():
+		            question.choice_set.create(choice_text='1 (Poor)')
+		            question.choice_set.create(choice_text='2 (Fair)')
+		            question.choice_set.create(choice_text='3 (Good)')
+		            question.choice_set.create(choice_text='4 (Very Good)')
+		            question.choice_set.create(choice_text='5 (Excellent)')
             # process the data in form.cleaned_data as required
 #			if(form.cleaned_data['login_id']!='administrator'):
 #				return render(request, 'hello_world/home.html')
@@ -24,15 +39,21 @@ def home(request):
 #				return render(request, 'hello_world/home.html')
             # ...
             # redirect to a new URL:
-			return HttpResponseRedirect('/admin/courseadded/')
+                    return HttpResponseRedirect('/admin/courseadded/')
+                elif esform.is_valid():
+                    course=Course.objects.get(course_code=esform.cleaned_data['course_code'])
+                    student=Student.objects.get(roll_no=esform.cleaned_data['student_roll_no'])
+                    course.enrolled_student.add(student)
+                    return HttpResponseRedirect('/admin/studentenrolled/')
 
     # if a GET (or any other method) we'll create a blank form
 	else:
-		form = AddCourses()
+		acform = AddCourses()
+		esform = EnrollStudents()
 
 	course_list=Course.objects.all()
 	student_list=Student.objects.all()
-	return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'form': form})
+	return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'enroll_student_form': esform})
 #	template=loader.get_template('hello_world/home.html')
 #	return HttpResponse(template.render(request))
 #def my_view(request):
@@ -54,12 +75,18 @@ def login_page(request):
                 password=request.POST['password']
 		form = AdminLogin(request.POST)
 		user = authenticate(username=username, password=password)
-		
+		with open('hello_world/templates/hello_world/registered_students.csv') as f:
+                    reader = list(csv.reader(f))
+                    for row in reader[1:]:
+                        Student.objects.get_or_create(name=row[0],roll_no=row[1],password=row[2],)
+            # creates a tuple of the new object or
+            # current object and a boolean of if it was created
         # check whether it's valid:
 		if form.is_valid():
             # process the data in form.cleaned_data as required
                         if user is not None:
                             login(request,user)
+                            
                             return HttpResponseRedirect('/admin/home/')
                         else:
                             form = AdminLogin()
@@ -102,4 +129,8 @@ def courseadded(request):
     if not request.user.is_authenticated():
             return HttpResponseRedirect('/admin/')
     return render(request, 'hello_world/courseadded.html')
-    
+
+def studentenrolled(request):
+    if not request.user.is_authenticated():
+            return HttpResponseRedirect('/admin/')
+    return render(request, 'hello_world/courseadded.html')
