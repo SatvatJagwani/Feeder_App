@@ -10,6 +10,9 @@ from .models import Course, Student
 def home(request):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/admin/')
+        
+	course_list=Course.objects.all()
+	student_list=Student.objects.all()
 # if this is a POST request we need to process the form data
 	if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -17,8 +20,13 @@ def home(request):
 		esform = EnrollStudents(request.POST)
         # check whether it's valid:
 		if acform.is_valid():
-		    course=Course.objects.get_or_create(course_code=acform.cleaned_data['course_code'])
-		    course.name=acform.cleaned_data['course_name']
+		    (course, is_new)=Course.objects.get_or_create(name=acform.cleaned_data['course_name'],course_code=acform.cleaned_data['course_code'])
+                    
+		    if not is_new:
+		      acform=AddCourses()
+		      esform=EnrollStudents()
+		      error='Course already exists'
+		      return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_acform':error, 'enroll_student_form': esform})
 		    course.feedbackform_set.create(name='midsem')
 		    course.feedbackform_set.create(name='endsem')
 		    for feedback_form in course.feedbackform_set.all():
@@ -41,9 +49,21 @@ def home(request):
             # redirect to a new URL:
                     return HttpResponseRedirect('/admin/courseadded/')
                 elif esform.is_valid():
-                    course=Course.objects.get(course_code=esform.cleaned_data['course_code'])
-                    student=Student.objects.get(roll_no=esform.cleaned_data['student_roll_no'])
-                    course.enrolled_student.add(student)
+                    course_set=Course.objects.filter(course_code=esform.cleaned_data['course_code'])
+                    if not course_set.exists():
+		      acform=AddCourses()
+		      esform=EnrollStudents()
+		      error='Course does not exist'
+		      return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_esform':error, 'enroll_student_form': esform})
+                    student_set=Student.objects.filter(roll_no=esform.cleaned_data['student_roll_no'])
+                    if not student_set.exists():
+		      acform=AddCourses()
+		      esform=EnrollStudents()
+		      error='Student is not enrolled'
+		      return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_esform':error, 'enroll_student_form': esform})
+		    for course in course_set:
+		        for student in student_set:
+                            course.enrolled_student.add(student)
                     return HttpResponseRedirect('/admin/studentenrolled/')
 
     # if a GET (or any other method) we'll create a blank form
@@ -51,8 +71,6 @@ def home(request):
 		acform = AddCourses()
 		esform = EnrollStudents()
 
-	course_list=Course.objects.all()
-	student_list=Student.objects.all()
 	return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'enroll_student_form': esform})
 #	template=loader.get_template('hello_world/home.html')
 #	return HttpResponse(template.render(request))
@@ -133,4 +151,4 @@ def courseadded(request):
 def studentenrolled(request):
     if not request.user.is_authenticated():
             return HttpResponseRedirect('/admin/')
-    return render(request, 'hello_world/courseadded.html')
+    return render(request, 'hello_world/studentenrolled.html')

@@ -35,6 +35,10 @@ div.panel.show {
 <h2></h2>
 <a href="/admin/logout/">Log out</a>
 <hr>
+	{{ error_acform }}
+<br>
+	{{ error_esform }}
+<br>
 <button class="accordion">Current Courses</button>
 <div class="panel">
 	{% if course_list %}
