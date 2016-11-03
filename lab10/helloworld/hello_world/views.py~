@@ -163,10 +163,10 @@ def login_app(request):
                 password=json_data['password']
                 student_set=Student.objects.filter(name=username)
                 if not student_set.exists():
-                    return JsonResponse({'response':"Invalid user"})
+                    return JsonResponse({'response':'Invalid user'})
                 student_set=Student.objects.filter(password=password)
                 if not student_set.exists():
-                    return JsonResponse({'response':"Invalid password"})
-                return JsonResponse({'response':"yes"})
+                    return JsonResponse({'response':'Invalid password'})
+                return JsonResponse({'response':'yes'})
         else:
                 return HttpResponse('get')
