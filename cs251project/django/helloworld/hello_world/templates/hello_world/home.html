@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<title></title>
+<style>
+button.accordion {
+    background-color: red;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+
+button.accordion:hover {
+    background-color: #ddd;
+}
+
+div.panel {
+    padding: 0 18px;
+    display: none;
+    background-color: white;
+}
+
+div.panel.show {
+    display: block !important;
+}
+</style>
+</head>
+<body>
+<h2></h2>
+<a href="/admin/logout/">Log out</a>
+<hr>
+	{{ error_acform }}
+<br>
+	{{ error_esform }}
+<br>
+<button class="accordion">Current Courses</button>
+<div class="panel">
+	{% if course_list %}
+	<ul>
+	{% for course in course_list %}
+	<li><a href="/admin/courses/{{ course.course_code }}/">{{ course }}</a></li>
+	{% endfor %}
+	</ul>
+	{% else %}
+	<p>No courses are added.</p>
+	{% endif %}
+</div>
+<button class="accordion">Add Courses</button>
+<div class="panel">
+<form action=/admin/home.html onsubmit="return validateform()" method="post">
+  {% csrf_token %}
+    {{ add_course_form }}
+    <br>
+  <input type="submit" value="Submit">
+</form>
+</div>
+<button class="accordion">Registered Students</button>
+<div class="panel">
+	{% if student_list %}
+	<ul>
+	{% for student in student_list %}
+	<li><p>{{ student }} {{student.roll_no}}</p></li>
+	{% endfor %}
+	</ul>
+	{% else %}
+	<p>No students have been registered yet.</p>
+	{% endif %}
+</div>
+<button class="accordion">Enroll Students</button>
+<div class="panel">
+<form action=/admin/home.html onsubmit="return validateform()" method="post">
+  {% csrf_token %}
+    {{ enroll_student_form }}
+    <br>
+  <input type="submit" value="Submit">
+</form>
+</div>
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+var j;
+for (i = 0; i < acc.length; i++) {
+    acc[i].onclick = function(){
+	for(j=0;j<acc.length;j++)
+	{
+	if(this.innerHTML!=acc[j].innerHTML){
+	acc[j].nextElementSibling.style.display="none";
+	}
+	}
+	if(this.nextElementSibling.style.display=="block")
+        	this.nextElementSibling.style.display="none";
+	else
+		this.nextElementSibling.style.display="block";
+  }
+}
+</script>
+</body>
+</html>
