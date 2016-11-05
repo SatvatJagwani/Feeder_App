@@ -9,4 +9,5 @@ urlpatterns = [
 	url(r'^courseadded',views.courseadded,name='courseadded'),
 	url(r'^studentenrolled',views.studentenrolled,name='studentenrolled'),
 	url(r'^login_app',views.login_app,name='loginapp'),
+	url(r'^register_students',views.register_students,name='register_students'),
 ]

@@ -35,9 +35,7 @@ div.panel.show {
 <h2></h2>
 <a href="/instructor/logout/">Log out</a>
 <hr>
-	{{ error_acform }}
-<br>
-	{{ error_esform }}
+	{{ error }}
 <br>
 <button class="accordion">Add Course Feedback</button>
 <div class="panel">
@@ -52,7 +50,7 @@ div.panel.show {
 <div class="panel">
 <form action=/instructor/home.html onsubmit="return validateform()" method="post">
   {% csrf_token %}
-    {{ feedback_form }}
+    {{ deadline_form }}
     <br>
   <input type="submit" value="Submit">
 </form>
@@ -71,12 +69,15 @@ div.panel.show {
 </div>
 <button class="accordion">View Deadlines</button>
 <div class="panel">
-<form action=/admin/home.html onsubmit="return validateform()" method="post">
-  {% csrf_token %}
-    {{ enroll_student_form }}
-    <br>
-  <input type="submit" value="Submit">
-</form>
+	{% if deadline_list %}
+	<ul>
+	{% for deadline in deadline_list %}
+	<li><p>{{ deadline }} {{ deadline.course.course_code }} Due at: {{ deadline.deadline }}</p></li>
+	{% endfor %}
+	</ul>
+	{% else %}
+	<p>No deadlines have been registered yet.</p>
+	{% endif %}
 </div>
 <script>
 var acc = document.getElementsByClassName("accordion");

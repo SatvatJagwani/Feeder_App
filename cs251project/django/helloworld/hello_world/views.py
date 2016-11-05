@@ -28,6 +28,8 @@ def home(request):
                                 esform=EnrollStudents()
                                 error='Course already exists'
                                 return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_acform':error, 'enroll_student_form': esform})
+                        course.assignmentdeadline_set.create(name='midsem_exam_date')
+                        course.assignmentdeadline_set.create(name='endsem_exam_date')
                         course.feedbackform_set.create(name='midsem')
                         course.feedbackform_set.create(name='endsem')
                         for feedback_form in course.feedbackform_set.all():
@@ -94,10 +96,6 @@ def login_page(request):
                 password=request.POST['password']
                 form = AdminLogin(request.POST)
                 user = authenticate(username=username, password=password)
-                with open('hello_world/templates/hello_world/registered_students.csv') as f:
-                    reader = list(csv.reader(f))
-                    for row in reader[1:]:
-                        Student.objects.get_or_create(name=row[0],roll_no=row[1],password=row[2],)
             # creates a tuple of the new object or
             # current object and a boolean of if it was created
         # check whether it's valid:
@@ -170,3 +168,14 @@ def login_app(request):
                 return JsonResponse({'response':"yes"})
         else:
                 return HttpResponse('get')
+
+def register_students(request):
+    if not request.user.is_authenticated():
+            return HttpResponseRedirect('/admin/')
+    for student in Student.objects.all():
+            student.delete()
+    with open('hello_world/templates/hello_world/registered_students.csv') as f:
+            reader = list(csv.reader(f))
+            for row in reader[1:]:
+                    Student.objects.create(name=row[0],roll_no=row[1],password=row[2],)
+    return render(request, 'hello_world/register_students.html')

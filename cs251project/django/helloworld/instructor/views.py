@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from .forms import InstructorLogin, InstructorSignup, AddCourseFeedback
+from .forms import InstructorLogin, InstructorSignup, AddCourseFeedback, AddDeadline
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from hello_world.models import AdminOrInstructor, Course, FeedbackForm, Question, Choice
+from hello_world.models import AdminOrInstructor, Course, AssignmentDeadline#, FeedbackForm, Question, Choice
 # Create your views here.
 def login_page(request):
 
@@ -67,26 +67,43 @@ def home(request):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/instructor/')
         
-        #course_list=Course.objects.all()
+        deadline_list=AssignmentDeadline.objects.all()
         #student_list=Student.objects.all()
 # if this is a POST request we need to process the form data
         if request.method == 'POST':
         # create a form instance and populate it with data from the request:
                 fbform = AddCourseFeedback(request.POST)
-                #esform = EnrollStudents(request.POST)
+                adform = AddDeadline(request.POST)
         # check whether it's valid:
-                if fbform.is_valid():
-                        course_set=Course.objects.filter(course_code=fbform.cleaned_data['course_code'])
+                if adform.is_valid():
+                        course_set=Course.objects.filter(course_code=adform.cleaned_data['course_code'])
                         #(course, is_new)=Course.objects.get_or_create(name=acform.cleaned_data['course_name'],course_code=acform.cleaned_data['course_code'])
                     
                         if not course_set.exists():
                                 fbform=AddCourseFeedback()
-                                #esform=EnrollStudents()
+                                adform=AddDeadline()
                                 error='Course does not exist'
-                                return render(request, 'instructor/home.html',{'feedback_form':fbform,  'error':error})
+                                return render(request, 'instructor/home.html',{'feedback_form':fbform, 'deadline_form':adform, 'deadline_list':deadline_list, 'error':error})
                         for course in course_set:
-                                feedback_form=course.feedbackform_set.create(name=fbform.cleaned_data['name'])
-                                feedback_form.deadline=fbform.cleaned_data['deadline']
+                                course.assignmentdeadline_set.create(name=adform.cleaned_data['assignment_name'],deadline=adform.cleaned_data['assignment_deadline'])
+            # process the data in form.cleaned_data as required
+#                        if(form.cleaned_data['login_id']!='administrator'):
+#                                return render(request, 'hello_world/home.html')
+#                        if(form.cleaned_data['password']!='administrator'):
+#                                return render(request, 'hello_world/home.html')
+            # ...
+            # redirect to a new URL:
+                        return HttpResponseRedirect('/instructor/assignmentdeadlineadded/')
+                elif fbform.is_valid():
+                        course_set=Course.objects.filter(course_code=fbform.cleaned_data['course_code'])
+                        if not course_set.exists():
+                                fbform=AddCourseFeedback()
+                                adform=AddDeadline()
+                                error='Course does not exist'
+                                return render(request, 'instructor/home.html',{'feedback_form': fbform, 'error':error, 'deadline_form': adform, 'deadline_list':deadline_list})
+                        for course in course_set:
+                                feedback_form=course.feedbackform_set.create(name=fbform.cleaned_data['feedback_name'],deadline=fbform.cleaned_data['feedback_deadline'])
+                                #feedback_form.deadline=fbform.cleaned_data['deadline']
                                 feedback_form.question_set.create(question_text=fbform.cleaned_data['question_1'])
                                 feedback_form.question_set.create(question_text=fbform.cleaned_data['question_2'])
                                 feedback_form.question_set.create(question_text=fbform.cleaned_data['question_3'])
@@ -97,21 +114,6 @@ def home(request):
                                         question.choice_set.create(choice_text='3 (Good)')
                                         question.choice_set.create(choice_text='4 (Very Good)')
                                         question.choice_set.create(choice_text='5 (Excellent)')
-            # process the data in form.cleaned_data as required
-#                        if(form.cleaned_data['login_id']!='administrator'):
-#                                return render(request, 'hello_world/home.html')
-#                        if(form.cleaned_data['password']!='administrator'):
-#                                return render(request, 'hello_world/home.html')
-            # ...
-            # redirect to a new URL:
-                        return HttpResponseRedirect('/instructor/feedbackformadded/')
-                #elif esform.is_valid():
-                 #       course_set=Course.objects.filter(course_code=esform.cleaned_data['course_code'])
-                  #      if not course_set.exists():
-                   #             acform=AddCourses()
-                    #            esform=EnrollStudents()
-                     #           error='Course does not exist'
-                      #          return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_esform':error, 'enroll_student_form': esform})
                        # student_set=Student.objects.filter(roll_no=esform.cleaned_data['student_roll_no'])
                         #if not student_set.exists():
                          #       acform=AddCourses()
@@ -121,15 +123,15 @@ def home(request):
                         #for course in course_set:
                          #       for student in student_set:
                           #              course.enrolled_student.add(student)
-                        #return HttpResponseRedirect('/admin/studentenrolled/')
+                        return HttpResponseRedirect('/instructor/feedbackformadded/')
 
     # if a GET (or any other method) we'll create a blank form
         else:
                 fbform = AddCourseFeedback()
-                #esform = EnrollStudents()
+                adform = AddDeadline()
 
         
-        return render(request,'instructor/home.html', {'feedback_form':fbform})
+        return render(request,'instructor/home.html', {'feedback_form':fbform, 'deadline_form':adform, 'deadline_list':deadline_list})
 
 def instructoradded(request):
         return render(request,'instructor/instructoradded.html')
@@ -138,6 +140,11 @@ def feedbackformadded(request):
         if not request.user.is_authenticated():
                 return HttpResponseRedirect('/instructor/')
         return render(request,'instructor/feedbackformadded.html')
+        
+def assignmentdeadlineadded(request):
+        if not request.user.is_authenticated():
+                return HttpResponseRedirect('/instructor/')
+        return render(request,'instructor/assignmentdeadlineadded.html')
         
 def logout_page(request):
         if not request.user.is_authenticated():
