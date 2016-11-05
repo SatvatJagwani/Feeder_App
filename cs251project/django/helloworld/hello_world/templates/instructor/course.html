@@ -1,0 +1,10 @@
+<a href="/admin/home/">Back to Home</a>
+{% if students %}
+<ul>
+{% for student in students %}
+<li><p>{{ student }}</p></li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No students are enrolled.</p>
+{% endif %}
