@@ -83,7 +83,7 @@ def home(request):
                                 fbform=AddCourseFeedback()
                                 #esform=EnrollStudents()
                                 error='Course does not exist'
-                                return render(request, 'hello_world/home.html',{'course_list':course_list, 'student_list':student_list, 'add_course_form': acform, 'error_esform':error, 'enroll_student_form': esform})
+                                return render(request, 'instructor/home.html',{'feedback_form':fbform,  'error':error})
                         for course in course_set:
                                 feedback_form=course.feedbackform_set.create(name=fbform.cleaned_data['name'])
                                 feedback_form.deadline=fbform.cleaned_data['deadline']
